@@ -1,0 +1,369 @@
+1st program
+import csv
+a=[]
+with open('enjoysport.csv','r')as csvfile:
+    for row in csv.reader (csvfile):
+        a.append(row)
+    print(a)
+print("\n the total number of training instances are:",len(a))
+num_attribute=len(a[0])-1
+print("\n the initial hypothesis is:")
+hypothesis=['0']*num_attribute
+print(hypothesis)
+for i in range(0,len(a)):
+    if a[i][num_attribute]=='yes':
+        for j in range(0,num_attribute):
+            if hypothesis[j]=='0' or hypothesis[j]==a[i][j]:
+                hypothesis[j] = a[i][j]
+            else:
+                hypothesis[j]='?'
+    print("\n the hypothesis for the training instance{} is:\n".format(i+1),hypothesis)
+print("\n The Maximally specific hypothesis for the training instance is ")
+print(hypothesis)
+
+2nd prgrm
+import numpy as np
+import pandas as pd
+data = pd.DataFrame(data=pd.read_csv('enjoysport.csv'))
+concepts = np.array(data.iloc[:,0:-1])
+print(concepts)
+target = np.array(data.iloc[:,-1])
+print(target)
+def learn(concepts, target):
+    specific_h = concepts[0].copy()
+    print("initialization of specific_h and general_h")
+    print(specific_h)
+    general_h = [["?" for i in range(len(specific_h))] for i in range(len(specific_h))]
+    print(general_h)
+    for i, h in enumerate(concepts):
+        if target[i] == "yes":
+            for x in range(len(specific_h)):
+                if h[x]!= specific_h[x]:
+                    specific_h[x] ='?'
+                    general_h[x][x] ='?'
+                print(specific_h)
+        print(specific_h)
+        if target[i] == "no":
+            for x in range(len(specific_h)):
+                if h[x]!= specific_h[x]:
+                    general_h[x][x] = specific_h[x]
+                else:
+                    general_h[x][x] = '?'
+        print(" steps of Candidate Elimination Algorithm",i+1)
+        print(specific_h)
+        print(general_h)
+    indices = [i for i, val in enumerate(general_h) if val ==['?', '?', '?', '?', '?', '?']]
+    for i in indices:
+        general_h.remove(['?', '?', '?', '?', '?', '?'])
+    return specific_h, general_h
+s_final, g_final = learn(concepts, target)
+print("Final Specific_h:", s_final, sep="\n")
+print("Final General_h:", g_final, sep="\n")
+
+3rd prgrm
+import pandas as pd
+# Load the dataset
+df = pd.read_csv('customer_data.csv')
+# Display the original dataset
+print("Original dataset:")
+print(df)
+# Identify and delete rows that contain duplicate data
+for column in df.columns:
+df[columns]= df[columns].drop_duplicates()
+# Identify and delete columns that contain a single value
+df = df.loc[:, df.nunique() > 1]
+# Display the pre-processed dataset
+print("\nPre-processed dataset:")
+print(df)
+
+4th prgrm
+import math
+import pandas as pd
+from operator import itemgetter
+
+class DecisionTree:
+    def __init__(self, df, target, positive, parent_val, parent):
+        self.data = df
+        self.target = target
+        self.positive = positive
+        self.parent_val = parent_val
+        self.parent = parent
+        self.childs = []
+        self.decision = '';
+
+    def _get_entropy(self, data):
+        p = sum(data[self.target] == self.positive)
+        n = data.shape[0] - p
+        p_ratio = p / (p + n)
+        n_ratio = 1 - p_ratio
+        entropy_p = -p_ratio * math.log2(p_ratio) if p_ratio != 0 else 0
+        entropy_n = -n_ratio * math.log2(n_ratio) if n_ratio != 0 else 0
+        return entropy_p + entropy_n
+
+    def _get_gain(self, feat):
+        avg_info = 0
+        for val in self.data[feat].unique():
+            subset = self.data[self.data[feat] == val]
+            avg_info += self._get_entropy(subset) * len(subset) / self.data.shape[0]
+        return self._get_entropy(self.data) - avg_info
+
+    def _get_splitter(self):
+        self.splitter = max(self.gains, key=itemgetter(1))[0]
+
+    def update_nodes(self):
+        self.features = [col for col in self.data.columns if col != self.target]
+        self.entropy = self._get_entropy(self.data)
+        if self.entropy != 0:
+            self.gains = [(feat, self._get_gain(feat)) for feat in self.features]
+            self._get_splitter()
+            residual_columns = [k for k in self.data.columns if k != self.splitter]
+            for val in self.data[self.splitter].unique():
+                df_tmp = self.data[self.data[self.splitter] == val][residual_columns]
+                tmp_node = DecisionTree(df_tmp, self.target, self.positive, val, self.splitter)
+                self.childs.append(tmp_node)
+
+    def print_tree(n):
+        print(n.parent)
+        print(n.parent_val, '\n')
+        for child in n.childs:
+            if child:
+                print_tree(child)
+
+    df = pd.read_csv('C:\RACHITHA A\lab4') # Corrected the file path
+    dt = DecisionTree(df,'play','yes')
+    dt.update_nodes()
+    print_tree(dt)
+
+5th prgrm
+import pandas as pd
+import numpy as np
+dataset=pd.read_csv('Boston.csv')
+dataset.head()
+
+X=pd.DataFrame(dataset.iloc[:,:-1])
+X
+y=pd.DataFrame(dataset.iloc[:,-1])
+y
+
+from sklearn.model_selection import train_test_split
+X_train,X_test,y_train,y_test=train_test_split(X,y,test_size=0.20)
+
+from sklearn.ensemble import RandomForestRegressor
+regressor= RandomForestRegressor(n_estimators=20,random_state=0)
+regressor.fit(X_train,y_train)
+y_pred=regressor.predict(X_test)
+
+from sklearn import metrics
+print('mean absolute error:',metrics.mean_absolute_error(y_test,y_pred))
+print('mean squared error:',metrics.mean_squared_error(y_test,y_pred))
+print('root mean squared error:',np.sqrt(metrics.mean_squared_error(y_test,y_pred)))
+
+6th prgrm
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
+from sklearn import metrics
+
+df = pd.read_csv("pima_indian.csv")
+feature_col_names = ['num_preg', 'glucose_conc', 'diastolic_bp', 'thickness', 'insulin', 'bmi', 'diab_pred', 'age']
+predicted_class_names = ['diabetes']
+
+X = df[feature_col_names].values # these are factors for the prediction
+y = df[predicted_class_names].values # this is what we want to predict
+
+#splitting the dataset into train and test data
+
+xtrain,xtest,ytrain,ytest=train_test_split(X,y,test_size=0.33)
+
+print ('\n the total number of Training Data :',ytrain.shape)
+print ('\n the total number of Test Data :',ytest.shape)
+
+
+# Training Naive Bayes (NB) classifier on training data.
+
+clf = GaussianNB().fit(xtrain,ytrain.ravel())
+predicted = clf.predict(xtest)
+predictTestData= clf.predict([[6,148,72,35,0,33.6,0.627,50]])
+
+#printing Confusion matrix, accuracy, Precision and Recall
+
+print('\n Confusion matrix')
+print(metrics.confusion_matrix(ytest,predicted))
+
+print('\n Accuracy of the classifier is',metrics.accuracy_score(ytest,predicted))
+
+print('\n The value of Precision', metrics.precision_score(ytest,predicted))
+
+print('\n The value of Recall', metrics.recall_score(ytest,predicted))
+
+print("Predicted Value for individual Test Data:", predictTestData)
+
+
+8th prgrm
+
+import numpy as np
+import pandas as pd
+import csv
+from pgmpy.estimators import MaximumLikelihoodEstimator
+from pgmpy.models import BayesianModel
+from pgmpy.inference import VariableElimination   
+#read Cleveland Heart Disease data
+heartDisease = pd.read_csv('heart.csv')
+heartDisease = heartDisease.replace('?',np.nan)  
+#display the data
+print('Sample instances from the dataset are given below')
+print(heartDisease.head())  
+#display the Attributes names and datatyes  
+print('\n Attributes and datatypes')
+print(heartDisease.dtypes)   
+#Creat Model- Bayesian Network
+model =  BayesianModel([('age','heartdisease'),('sex','heartdisease'),( 'exang','heartdisease'),('cp','heartdisease'),('heartdisease', 'restecg'),('heartdisease','chol')])
+#Learning CPDs using Maximum Likelihood Estimators  
+print('\n Learning CPD using Maximum likelihood estimators')
+model.fit(heartDisease,estimator=MaximumLikelihoodEstimator)   
+# Inferencing with Bayesian Network  
+print('\n Inferencing with Bayesian Network:')
+HeartDiseasetest_infer = VariableElimination(model)   
+#computing the Probability of HeartDisease given restecg
+print('\n 1.Probability of HeartDisease given evidence= restecg :1')
+q1=HeartDiseasetest_infer.query(variables=['heartdisease'],evidence={'restecg':1})
+print(q1)  
+#computing the Probability of HeartDisease given cp  
+print('\n 2.Probability of HeartDisease given evidence= cp:2 ')
+q2=HeartDiseasetest_infer.query(variables=['heartdisease'],evidence={'cp':2})
+print(q2)
+
+7th prgrm
+import pandas as pd 
+msg=pd.read_csv('naivetext.csv',names=['message','label']) 
+print('The dimensions of the dataset',msg.shape) 
+msg['labelnum']=msg.label.map({'pos':1,'neg':0})
+X=msg.message
+y=msg.labelnum 
+print(X)
+print(y) 
+#splitting the dataset into train and test data
+from sklearn.model_selection import train_test_split
+xtrain,xtest,ytrain,ytest=train_test_split(X,y) 
+print ('\n The total number of Training Data :',ytrain.shape)
+print ('\n The total number of Test Data :',ytest.shape)
+
+#output of count vectoriser is a sparse matrix
+from sklearn.feature_extraction.text import CountVectorizer
+count_vect = CountVectorizer()
+xtrain_dtm = count_vect.fit_transform(xtrain)
+xtest_dtm=count_vect.transform(xtrain)
+print('\n The words or Tokens in the text documents \n')
+print(count_vect.get_feature_names()) 
+df=pd.DataFrame(xtrain_dtm.toarray(),columns=count_vect.get_feature_names()) 
+# Training Naive Bayes (NB) classifier on training data.
+from sklearn.naive_bayes import MultinomialNB
+clf = MultinomialNB().fit(xtrain_dtm,ytrain)
+predicted = clf.predict(xtest_dtm)
+
+#printing accuracy, Confusion matrix, Precision and Recall
+from sklearn import metrics
+print('\n Accuracy of the classifer is',metrics.accuracy_score(ytest,predicted))
+print('\n Confusion matrix')
+print(metrics.confusion_matrix(ytest,predicted)) 
+print('\n The value of Precision' , metrics.precision_score(ytest,predicted)) 
+print('\n The value of Recall' , metrics.recall_score(ytest,predicted))
+
+9th prgrm
+import matplotlib.pyplot as plt
+from sklearn import datasets
+from sklearn.cluster import KMeans
+import sklearn.metrics as sm
+import pandas as pd
+import numpy as np
+
+iris = datasets.load_iris()
+
+X = pd.DataFrame(iris.data)
+X.columns = ['Sepal_Length','Sepal_Width','Petal_Length','Petal_Width']
+
+y = pd.DataFrame(iris.target)
+y.columns = ['Targets']
+
+model = KMeans(n_clusters=3)
+model.fit(X)
+
+
+plt.figure(figsize=(14,7))
+
+colormap = np.array(['red', 'lime', 'black'])
+
+# Plot the Original Classifications
+plt.subplot(1, 2, 1)
+plt.scatter(X.Petal_Length, X.Petal_Width, c=colormap[y.Targets], s=40)
+plt.title('Real Classification')
+plt.xlabel('Petal Length')
+plt.ylabel('Petal Width')
+
+
+# Plot the Models Classifications
+plt.subplot(1, 2, 2)
+plt.scatter(X.Petal_Length, X.Petal_Width, c=colormap[model.labels_], s=40)
+plt.title('K Mean Classification')
+plt.xlabel('Petal Length')
+plt.ylabel('Petal Width')
+print('The accuracy score of K-Mean: ',sm.accuracy_score(y, model.labels_))
+print('The Confusion matrixof K-Mean: ',sm.confusion_matrix(y, model.labels_))
+
+
+from sklearn import preprocessing
+scaler = preprocessing.StandardScaler()
+scaler.fit(X)
+xsa = scaler.transform(X)
+xs = pd.DataFrame(xsa, columns = X.columns)
+
+
+from sklearn.mixture import GaussianMixture
+gmm = GaussianMixture(n_components=3)
+gmm.fit(xs)
+
+y_gmm = gmm.predict(xs)
+
+
+plt.subplot(2, 2, 3)
+plt.scatter(X.Petal_Length, X.Petal_Width, c=colormap[y_gmm], s=40)
+plt.title('GMM Classification')
+plt.xlabel('Petal Length')
+plt.ylabel('Petal Width')
+
+print('The accuracy score of EM: ',sm.accuracy_score(y, y_gmm))
+print('The Confusion matrix of EM: ',sm.confusion_matrix(y, y_gmm))
+
+10th prgrm
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score
+# Step 1: Dataset Preparation
+data = {
+ 'Weight': [150, 200, 250, 180, 300, 220],
+ 'Color': ['Red', 'Red', 'Orange', 'Orange', 'Red', 'Orange'],
+ 'Label': ['Apple', 'Apple', 'Orange', 'Orange', 'Apple', 'Orange']
+}
+df = pd.DataFrame(data)
+# Step 2: Feature Extraction
+df['Color'] = df['Color'].map({'Red': 0, 'Orange': 1})
+# Step 3: Data Split
+X = df[['Weight', 'Color']]
+y = df['Label']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+# Step 4: Model Training
+svm = SVC(kernel='linear')
+svm.fit(X_train, y_train)
+# Step 5: Model Evaluation
+y_pred = svm.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+print("Accuracy:", accuracy)
+# Step 6: Prediction
+new_data = {
+ 'Weight': [190],
+ 'Color': [0]
+}
+new_df = pd.DataFrame(new_data)
+new_prediction = svm.predict(new_df)
+print("New prediction:", new_prediction)
